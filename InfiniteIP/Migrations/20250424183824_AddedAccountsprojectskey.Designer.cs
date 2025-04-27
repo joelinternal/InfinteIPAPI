@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InfiniteIP.Migrations
 {
     [DbContext(typeof(InfiniteContext))]
-    [Migration("20250427143204_GMSheetDateChange")]
-    partial class GMSheetDateChange
+    [Migration("20250424183824_AddedAccountsprojectskey")]
+    partial class AddedAccountsprojectskey
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,8 +64,8 @@ namespace InfiniteIP.Migrations
                     b.Property<string>("duration")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("enddate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("enddate")
+                        .HasColumnType("text");
 
                     b.Property<decimal>("hours")
                         .HasColumnType("numeric");
@@ -94,8 +94,8 @@ namespace InfiniteIP.Migrations
                     b.Property<int>("sow")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("startdate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("startdate")
+                        .HasColumnType("text");
 
                     b.Property<string>("status")
                         .HasColumnType("text");
@@ -129,32 +129,6 @@ namespace InfiniteIP.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("InfiniteIP.Models.Sow", b =>
-                {
-                    b.Property<int>("sowId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("sowId"));
-
-                    b.Property<int?>("AccountId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("sowName")
-                        .HasColumnType("text");
-
-                    b.HasKey("sowId");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("ProjectId");
-
-                    b.ToTable("Sow");
-                });
-
             modelBuilder.Entity("InfiniteIP.Models.Project", b =>
                 {
                     b.HasOne("InfiniteIP.Models.Account", "Account")
@@ -162,21 +136,6 @@ namespace InfiniteIP.Migrations
                         .HasForeignKey("AccountId");
 
                     b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("InfiniteIP.Models.Sow", b =>
-                {
-                    b.HasOne("InfiniteIP.Models.Account", "account")
-                        .WithMany()
-                        .HasForeignKey("AccountId");
-
-                    b.HasOne("InfiniteIP.Models.Project", "project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId");
-
-                    b.Navigation("account");
-
-                    b.Navigation("project");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,10 +1,16 @@
-﻿using InfiniteIP.Models;
+﻿using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Globalization;
+using System.Threading.Tasks;
+using InfiniteIP.Models;
 using InfiniteIP.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using System.Drawing;
-using System.Globalization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InfiniteIP.Controllers
 {
@@ -47,7 +53,7 @@ namespace InfiniteIP.Controllers
             }
         }
 
-        [HttpGet("Runsheet/{AccountId}/{ProjectId}")]
+        [HttpGet("Runsheet/{AccountId}/{ProjectId}")] 
         public async Task<IActionResult> GetRunSheet(int AccountId, int ProjectId)
         {
             try
@@ -98,8 +104,8 @@ namespace InfiniteIP.Controllers
             var minDate = datas.Min(x => x.startdate);
             var maxDate = datas.Max(x => x.enddate);
 
-            var startDate = minDate;
-            var endDate = maxDate;
+            var startDate = DateTime.Parse(minDate);
+            var endDate = DateTime.Parse(maxDate);
 
             decimal TotalCost = 0;
             decimal TotalRev = 0;

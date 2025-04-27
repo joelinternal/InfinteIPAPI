@@ -21,7 +21,6 @@ builder.Services.AddCors(o => o.AddPolicy("alloworgin", builder =>
     builder.WithOrigins(orgins)
     .AllowAnyHeader().AllowAnyMethod();
 }));
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var app = builder.Build();
 app.UseCors("alloworgin");
 
