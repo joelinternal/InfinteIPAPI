@@ -17,6 +17,11 @@ namespace InfiniteIP.Services
         {
             try
             {
+                gmSheets.ForEach(a =>
+                {
+                    a.startdate.AddDays(1);
+                    a.enddate.AddDays(1);
+                });
                 _context.GmSheet.AddRange(gmSheets);
                 await _context.SaveChangesAsync();
                 return true;
@@ -218,8 +223,8 @@ namespace InfiniteIP.Services
 
             var months = new List<string>();
 
-            var minDate = DateTime.Parse(result.Min(x => x.startdate));
-            var maxDate = DateTime.Parse(result.Max(x => x.enddate));
+            var minDate = result.Min(x => x.startdate);
+            var maxDate = result.Max(x => x.enddate);
 
             List<string> monthList = GetMonthBetween(minDate, maxDate);
             /*

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InfiniteIP.Migrations
 {
     [DbContext(typeof(InfiniteContext))]
-    [Migration("20250426183005_updatesow")]
-    partial class updatesow
+    [Migration("20250427132807_InitialCommit")]
+    partial class InitialCommit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
