@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/InfiniteIP/appsettings.json
+Migrations/
+/InfiniteIP/appsettings.json
+/InfiniteIP/InfiniteIP.http
+/InfiniteIP/Migrations/
