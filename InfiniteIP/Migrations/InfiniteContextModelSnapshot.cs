@@ -61,8 +61,8 @@ namespace InfiniteIP.Migrations
                     b.Property<string>("duration")
                         .HasColumnType("text");
 
-                    b.Property<string>("enddate")
-                        .HasColumnType("text");
+                    b.Property<DateTime>("enddate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("hours")
                         .HasColumnType("numeric");
@@ -91,8 +91,8 @@ namespace InfiniteIP.Migrations
                     b.Property<int>("sow")
                         .HasColumnType("integer");
 
-                    b.Property<string>("startdate")
-                        .HasColumnType("text");
+                    b.Property<DateTime>("startdate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("status")
                         .HasColumnType("text");
