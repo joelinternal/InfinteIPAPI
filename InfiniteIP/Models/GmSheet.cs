@@ -19,8 +19,8 @@ namespace InfiniteIP.Models
         public string roleaspersow { get; set; }
         public string duration { get; set; }
         public decimal hours { get; set; }
-        public string startdate { get; set; }
-        public string enddate { get; set; }
+        public DateTime startdate { get; set; }
+        public DateTime enddate { get; set; }
         public string location { get; set; }
         public string type { get; set; }
         public string billrate { get; set; }
