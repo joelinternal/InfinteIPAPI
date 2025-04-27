@@ -82,6 +82,20 @@ namespace InfiniteIP.Controllers
             }
         }
 
+        [HttpGet("Runsheetsummary/{AccountId}/{ProjectId}")]
+        public async Task<IActionResult> GetRunsheetsummary(int AccountId, int ProjectId)
+        {
+            try
+            {
+                var response = await _service.GetRunsheetsummary(AccountId, ProjectId);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeleteGmDheetAsync(int Id)
         {

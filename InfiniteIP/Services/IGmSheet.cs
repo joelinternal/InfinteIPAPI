@@ -20,5 +20,7 @@ namespace InfiniteIP.Services
 
         Task<List<Sow>> GetSow(int AccountId, int ProjectId);
 
+        Task<Dictionary<string, Runsheetsummary>> GetRunsheetsummary(int AccountId, int ProjectId);
+
     }
 }
