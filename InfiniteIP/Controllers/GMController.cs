@@ -61,6 +61,20 @@ namespace InfiniteIP.Controllers
             }
         }
 
+        [HttpPost("SaveRunSheetUsers")]
+        public async Task<IActionResult> SaveRunSheetUsers([FromBody] List<GmRunsheet> gmRunsheets)
+        {
+            try
+            {
+                var response = await _service.SaveRunSheetUsers(gmRunsheets);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpGet("RevenueDetails/{AccountId}/{ProjectId}")]
         public async Task<IActionResult> GetRevenueDetails(int AccountId, int ProjectId)
@@ -129,7 +143,7 @@ namespace InfiniteIP.Controllers
             worksheet.Cells[6, 14].Value = "Loaded Rate";
             worksheet.Cells[6, 15].Value = "Billable";
 
-            List<string> monthList = GmSheetServices.GetMonthBetween(startDate, endDate);
+            var (monthList, yr) = GmSheetServices.GetMonthBetween(startDate, endDate);
             int k = 1;
             foreach (var month in monthList)
             {

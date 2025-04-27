@@ -11,10 +11,9 @@ namespace InfiniteIP.DbUtils
         }
 
         public DbSet<GmSheet> GmSheet { get; set; }
-
         public DbSet<Account> Account { get; set; }
-
         public DbSet<Project> Projects { get; set; }
         public DbSet<Sow> Sow { get; set; }
+        public DbSet<GmRunsheet> GmRunsheet { get; set; }
     }
 }

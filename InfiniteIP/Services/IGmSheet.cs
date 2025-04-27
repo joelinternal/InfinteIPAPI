@@ -11,7 +11,7 @@ namespace InfiniteIP.Services
 
         Task<bool> DeleteGmDheetAsync(int Id);
 
-        Task<List<Gmrunsheet>> GetRunSheet(int AccountId, int ProjectId);
+        Task<GmRunSheetResponse> GetRunSheet(int AccountId, int ProjectId);
 
         Task<List<Account>> GetAccounts();
         Task<List<Project>> GetProjects(int AccountId);
@@ -19,6 +19,6 @@ namespace InfiniteIP.Services
         Task<Sow> CreateSow(Sowparams sowparams);
 
         Task<List<Sow>> GetSow(int AccountId, int ProjectId);
-
+        Task<bool> SaveRunSheetUsers(List<GmRunsheet> gmRunsheets);
     }
 }
