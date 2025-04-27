@@ -19,6 +19,9 @@ namespace InfiniteIP.Services
         Task<Sow> CreateSow(Sowparams sowparams);
 
         Task<List<Sow>> GetSow(int AccountId, int ProjectId);
+
+        Task<Dictionary<string, Runsheetsummary>> GetRunsheetsummary(int AccountId, int ProjectId);
+
         Task<bool> SaveRunSheetUsers(List<GmRunsheet> gmRunsheets);
     }
 }

@@ -348,6 +348,82 @@ namespace InfiniteIP.Services
             return gmRunSheetResponse;
         }
 
+        //GM sheet Summary Summary(Actual+Projection) && YTD
+        public async Task<Dictionary<string,Runsheetsummary>> GetRunsheetsummary(int AccountId,int ProjectId)
+        {
+            Runsheetsummary runsheetsummary = new();
+            Runsheetsummary runsheetsummaryYtd = new();   
+
+            var result = await _context.GmSheet
+                          .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes")
+                          .Select(x => new
+                          { billrate = decimal.Parse(x.billrate) * x.hours, x.duration,x.startdate,x.enddate, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
+                          .AsQueryable()
+                          .ToListAsync();
+
+            decimal totalRevenue = 0;
+            decimal totalCost = 0;
+            decimal plannedgm = 0;
+            decimal afterdiscount = 0;
+            decimal actualrevenueprojection = 0;
+            decimal afterdiscountYtd = 0;
+            decimal plannedgmYtd = 0;
+
+            if (result.Count > 0)
+            {
+
+                var minDate = DateTime.Parse(result.Min(x => x.startdate));
+                var maxDate = DateTime.Parse(result.Max(x => x.enddate));
+
+                List<string> monthList = GetMonthBetween(minDate, maxDate);
+
+                totalRevenue = result.Sum(x => x.billrate) * monthList.Count;
+                totalCost = result.Sum(x => x.loadedrate) * monthList.Count;
+
+                actualrevenueprojection = totalRevenue;
+                afterdiscountYtd = actualrevenueprojection * 1;
+
+                afterdiscount = totalRevenue * 1;
+                plannedgm = (totalRevenue * 1) * 25 / 100;
+
+                plannedgmYtd = (actualrevenueprojection * 1) * 25 / 100;
+
+                //Summary Actual+Projection
+                runsheetsummary.actualrevenueprojection = totalRevenue;
+                runsheetsummary.afterdiscount = afterdiscount;//as per the Excel
+                runsheetsummary.plannedgmpercentage = 25;//as per excel
+                runsheetsummary.plannedgm = plannedgm;
+                runsheetsummary.plannedcostnottoextend = afterdiscount - plannedgm;
+                runsheetsummary.actualcostprojection = totalCost;
+                runsheetsummary.costoverrun = (afterdiscount - plannedgm) - totalCost;
+                runsheetsummary.projectgmpercentage = (int)((afterdiscount - totalCost) / afterdiscount) / 100;
+                runsheetsummary.balanceamountprojected = totalRevenue; //--do verify
+
+                //Summary YTD
+                runsheetsummaryYtd.actualrevenueprojection = actualrevenueprojection;
+                runsheetsummaryYtd.afterdiscount = afterdiscountYtd;
+                runsheetsummaryYtd.plannedgmpercentage = 25;
+                runsheetsummaryYtd.plannedgm = plannedgmYtd;
+                runsheetsummaryYtd.plannedcostnottoextend = afterdiscountYtd - plannedgmYtd;
+                runsheetsummaryYtd.actualcostprojection = totalCost;
+                runsheetsummaryYtd.costoverrun = (afterdiscountYtd - plannedgmYtd) - totalCost;
+                runsheetsummaryYtd.projectgmpercentage = (int)((afterdiscountYtd - totalCost) / afterdiscountYtd) / 100;
+                runsheetsummaryYtd.balanceamountprojected = totalRevenue;
+            }
+
+            Dictionary<string, Runsheetsummary> dictionaryrunsheet = new()
+            {
+                {
+                    "SummaryActual",runsheetsummary
+                },
+                {
+                    "SummaryYTD",runsheetsummaryYtd
+                }
+            };
+
+            return dictionaryrunsheet;
+        }
+
 
         public static (List<string>, List<string>) GetMonthBetween(DateTime startDate, DateTime endDate)
         {
@@ -364,6 +440,7 @@ namespace InfiniteIP.Services
 
             return (month, yr);
         }
+
 
     }
 
