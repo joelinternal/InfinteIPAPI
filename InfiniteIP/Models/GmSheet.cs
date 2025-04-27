@@ -29,5 +29,6 @@ namespace InfiniteIP.Models
         public string billable { get; set; }
         [NotMapped]
         public int slno { get; set; }
+        public int edit { get; set; }
     }
 }

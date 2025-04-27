@@ -2,6 +2,7 @@
 using InfiniteIP.DbUtils;
 using InfiniteIP.Models;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml.FormulaParsing.FormulaExpressions;
 
 namespace InfiniteIP.Services
 {
@@ -23,6 +24,35 @@ namespace InfiniteIP.Services
                     a.enddate.AddDays(1);
                 });
                 _context.GmSheet.AddRange(gmSheets);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> SubmitGmSheetAsync(List<GmSheet> gmSheets)
+        {
+            try
+            {
+                var result= await _context.GmSheet.Where(x => x.accountId == gmSheets[0].accountId && x.projectId == gmSheets[0].projectId && x.sow == gmSheets[0].sow)                                   
+                                    .ToListAsync();
+
+                if (result.Count > 0)
+                {
+                    _context.Entry(gmSheets).State=EntityState.Modified;
+                }
+                else
+                {
+                    gmSheets.ForEach(a =>
+                    {
+                        a.startdate.AddDays(1);
+                        a.enddate.AddDays(1);
+                    });
+                    _context.GmSheet.AddRange(gmSheets);                    
+                }
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -316,8 +346,8 @@ namespace InfiniteIP.Services
             if (result.Count > 0)
             {
 
-                var minDate = DateTime.Parse(result.Min(x => x.startdate));
-                var maxDate = DateTime.Parse(result.Max(x => x.enddate));
+                var minDate =result.Min(x => x.startdate);
+                var maxDate =result.Max(x => x.enddate);
 
                 List<string> monthList = GetMonthBetween(minDate, maxDate);
 
