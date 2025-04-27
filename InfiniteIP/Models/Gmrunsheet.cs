@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations;
 namespace InfiniteIP.Models
 {
     public class Gmrunsheet
-    {       
+    {
+        public int GmId { get; set; }
         public int accountId { get; set; }
         public int projectId { get; set; }
         public int sow { get; set; }
@@ -22,11 +23,18 @@ namespace InfiniteIP.Models
         public string billrate { get; set; }
         public string payrate { get; set; }
         public string loadedrate { get; set; }
-        public string billable { get; set; }        
+        public string billable { get; set; }
         public decimal totalcost { get; set; }
         public decimal totalrevenue { get; set; }
         public decimal totalrevenueytd { get; set; }
         public decimal totalrevenueytdproject { get; set; }
         public List<Runsheet> runsheet { get; set; }
+    }
+
+    public class GmRunSheetResponse
+    {
+        public List<Gmrunsheet> gmRunSheet { get; set; }
+        public List<string> columnHeader { get; set; }
+        public List<string> monthHeaders { get; set; }
     }
 }

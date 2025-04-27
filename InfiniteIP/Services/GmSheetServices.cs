@@ -18,11 +18,6 @@ namespace InfiniteIP.Services
         {
             try
             {
-                gmSheets.ForEach(a =>
-                {
-                    a.startdate.AddDays(1);
-                    a.enddate.AddDays(1);
-                });
                 _context.GmSheet.AddRange(gmSheets);
                 await _context.SaveChangesAsync();
                 return true;
@@ -245,25 +240,89 @@ namespace InfiniteIP.Services
             return dictrevenue;
         }
 
-        public async Task<List<Gmrunsheet>> GetRunSheet(int AccountId, int ProjectId)
+
+        public async Task<bool> SaveRunSheetUsers(List<GmRunsheet> gmRunsheets)
         {
+            try
+            {
+                List<int> GmIds = gmRunsheets.Select(gm => gm.GmId).ToList();
+                var runSheets = await _context.GmRunsheet.Where(a => GmIds.Contains(a.GmId)).ToListAsync();
+                if (runSheets.Any())
+                {
+                    foreach (var runsheet in gmRunsheets) 
+                    {
+                        var checkExist = runSheets.Where(a => a.GmId == runsheet.GmId && a.month == runsheet.month).FirstOrDefault();
+                        if (checkExist == null)
+                        {
+                            _context.GmRunsheet.Add(runsheet);
+                        }
+                        else
+                        {
+                            checkExist.hours = runsheet.hours;
+                            _context.GmRunsheet.Update(checkExist);
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    _context.GmRunsheet.AddRange(gmRunsheets);
+                    await _context.SaveChangesAsync();
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<GmRunSheetResponse> GetRunSheet(int AccountId, int ProjectId)
+        {
+            GmRunSheetResponse gmRunSheetResponse = new();
+            List<string> columnHeaders = new();
+            List<string> chHeader = new();
+            List<string> costHeader = new();
+            List<string> rhHeader = new();
+            List<string> revHeader = new();
+
+            List<string> monthHeaders = new();
+            List<string> monthHeader = new();
+
             var result = await _context.GmSheet
                 .Where(x => x.accountId == AccountId && x.projectId == ProjectId)
                 .ToListAsync();
+
+            List<int> gmIds = result.Select(a => a.Id).ToList();
+
+            var gmRunSheetData = await _context.GmRunsheet.Where(a => gmIds.Contains(a.GmId)).ToListAsync();
 
             var months = new List<string>();
 
             var minDate = result.Min(x => x.startdate);
             var maxDate = result.Max(x => x.enddate);
 
-            List<string> monthList = GetMonthBetween(minDate, maxDate);
-            /*
-            if (monthList.Count > 0)
-            {
-                months = monthList.Skip(Math.Max(0, monthList.Count - 3)).ToList();
-            }
-            */
+            var (monthList, yearList) = GetMonthBetween(minDate, maxDate);
 
+            int i = 0;
+            foreach(string yr in yearList)
+            {
+                chHeader.Add($"CH{yr}");
+                costHeader.Add("Cost");
+                rhHeader.Add($"RH{yr}");
+                revHeader.Add("Rev");
+                monthHeader.Add(monthList[i++]);
+            }
+
+            columnHeaders.AddRange(chHeader);
+            columnHeaders.AddRange(costHeader);
+            columnHeaders.AddRange(rhHeader);
+            columnHeaders.AddRange(revHeader);
+
+            monthHeaders.AddRange(monthHeader);
+            monthHeaders.AddRange(monthHeader);
+            monthHeaders.AddRange(monthHeader);
+            monthHeaders.AddRange(monthHeader);
 
             List<Gmrunsheet> lstgmrunsheet = new();           
 
@@ -271,6 +330,7 @@ namespace InfiniteIP.Services
             {
                 Gmrunsheet gmrunsheet = new();
                 List<Runsheet> lstrunsheet = new();
+                gmrunsheet.GmId = item.Id;
                 gmrunsheet.brspdMgr = item.brspdMgr;
                 gmrunsheet.program = item.program;
                 gmrunsheet.status = item.status;
@@ -286,31 +346,25 @@ namespace InfiniteIP.Services
                 gmrunsheet.loadedrate = item.loadedrate;
                 gmrunsheet.billrate = item.billrate;
 
+                var (currentMonthList, _) = GetMonthBetween(item.startdate, item.enddate);
+                
+
                 foreach (var month in monthList)
                 {
+                    var runData = gmRunSheetData
+                    .Where(a => a.GmId == item.Id && a.month == month)
+                    .FirstOrDefault();
                     Runsheet runsheet = new();
                     runsheet.GMId = item.Id;
                     runsheet.month = month;
-                    runsheet.hours = item.hours;
-                    runsheet.cost= decimal.Parse(item.loadedrate) * item.hours;
-                    runsheet.revenue= decimal.Parse(item.billrate) * item.hours;
+                    runsheet.hours = runData == null ? item.hours : runData.hours;
+                    runsheet.cost= decimal.Parse(item.loadedrate) * (runData == null ? item.hours : runData.hours);
+                    runsheet.revenue= decimal.Parse(item.billrate) * (runData == null ? item.hours : runData.hours);
+                    runsheet.currentMonth = DateTime.Now.ToString("MMM yy") == month;
+                    runsheet.isCurrentMonthActive = currentMonthList.Contains(month);
                     lstrunsheet.Add(runsheet);
                 }
 
-                /*
-                runsheet.firsthour = item.hours;
-                runsheet.secondhour = item.hours;
-                runsheet.thirdhour = item.hours;
-                runsheet.lblfirstmonth = monthList[0].ToString();
-                runsheet.lblsecondmonth = monthList[1].ToString();
-                runsheet.lblthirdmonth = monthList[2].ToString();
-                runsheet.costfirstmonth = decimal.Parse(item.loadedrate) * item.hours;
-                runsheet.costsecondmonth = decimal.Parse(item.loadedrate) * item.hours;
-                runsheet.costthirdmonth = decimal.Parse(item.loadedrate) * item.hours;
-                runsheet.revenuefirstmonth = decimal.Parse(item.billrate) * item.hours;
-                runsheet.revenuesecondmonth = decimal.Parse(item.billrate) * item.hours;
-                runsheet.revenuethirdmonth = decimal.Parse(item.billrate) * item.hours;
-                */
                 gmrunsheet.runsheet = lstrunsheet;
                 gmrunsheet.totalcost = decimal.Parse(item.loadedrate) * item.hours * 3;
                 gmrunsheet.totalrevenue = decimal.Parse(item.billrate) * item.hours * 3;
@@ -318,8 +372,10 @@ namespace InfiniteIP.Services
                 gmrunsheet.totalrevenueytdproject = decimal.Parse(item.billrate) * item.hours * monthList.Count;
                 lstgmrunsheet.Add(gmrunsheet);
             }
-
-            return lstgmrunsheet;
+            gmRunSheetResponse.gmRunSheet = lstgmrunsheet;
+            gmRunSheetResponse.columnHeader = columnHeaders;
+            gmRunSheetResponse.monthHeaders = monthHeaders;
+            return gmRunSheetResponse;
         }
 
         //GM sheet Summary Summary(Actual+Projection) && YTD
@@ -399,18 +455,20 @@ namespace InfiniteIP.Services
         }
 
 
-        public static List<string> GetMonthBetween(DateTime startDate, DateTime endDate)
+        public static (List<string>, List<string>) GetMonthBetween(DateTime startDate, DateTime endDate)
         {
             List<string> month = new();
+            List<string> yr = new();
             DateTime iterator = new DateTime(startDate.Year, startDate.Month, 1);
 
             while (iterator <= endDate)
             {
-                month.Add(iterator.ToString("MMMM yyyy", CultureInfo.InvariantCulture));
+                month.Add(iterator.ToString("MMM yy", CultureInfo.InvariantCulture));
+                yr.Add(iterator.ToString("yy", CultureInfo.InvariantCulture));
                 iterator = iterator.AddMonths(1);
             }
 
-            return month;
+            return (month, yr);
         }
 
 
