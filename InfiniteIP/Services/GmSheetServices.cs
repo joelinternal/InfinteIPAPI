@@ -32,12 +32,12 @@ namespace InfiniteIP.Services
         {
             try
             {
-                var result= await _context.GmSheet.Where(x => x.accountId == gmSheets[0].accountId && x.projectId == gmSheets[0].projectId && x.sow == gmSheets[0].sow)                                   
+                var result = await _context.GmSheet.Where(x => x.accountId == gmSheets[0].accountId && x.projectId == gmSheets[0].projectId && x.sow == gmSheets[0].sow)
                                     .ToListAsync();
 
                 if (result.Count > 0)
                 {
-                    _context.Entry(gmSheets).State=EntityState.Modified;
+                    _context.Entry(gmSheets).State = EntityState.Modified;
                 }
                 else
                 {
@@ -46,7 +46,7 @@ namespace InfiniteIP.Services
                         a.startdate.AddDays(1);
                         a.enddate.AddDays(1);
                     });
-                    _context.GmSheet.AddRange(gmSheets);                    
+                    _context.GmSheet.AddRange(gmSheets);
                 }
                 await _context.SaveChangesAsync();
                 return true;
@@ -107,7 +107,7 @@ namespace InfiniteIP.Services
                 await _context.SaveChangesAsync();
                 return sow;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new();
             }
@@ -118,10 +118,10 @@ namespace InfiniteIP.Services
         {
             try
             {
-                return await _context.Sow.Where(x => x.account.AccountId == AccountId && x.project.ProjectId == ProjectId).Include(a=>a.project).Include(a=>a.account)
+                return await _context.Sow.Where(x => x.account.AccountId == AccountId && x.project.ProjectId == ProjectId).Include(a => a.project).Include(a => a.account)
                                 .ToListAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new();
             }
@@ -187,6 +187,20 @@ namespace InfiniteIP.Services
             decimal percentageoffshore = 0;
             decimal percentageonshore = 0;
 
+            var resultmonth = await _context.GmSheet
+                                   .Where(x => x.accountId == AccountId && x.projectId == ProjectId)
+                                   .Select(x => new
+                                   { x.startdate, x.enddate })
+                                   .AsQueryable()
+                                   .ToListAsync();
+
+            var months = new List<string>();
+
+            var minDate = resultmonth.Min(x => x.startdate);
+            var maxDate = resultmonth.Max(x => x.enddate);
+
+            var (monthList, yearList) = GetMonthBetween(minDate, maxDate);
+
             var resultoffshore = await _context.GmSheet
                             .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes" && x.location == "Offshore")
                             .Select(x => new
@@ -221,6 +235,7 @@ namespace InfiniteIP.Services
             onshoreerevenue.revenu = totalyearspendonshore;
             onshoreerevenue.margin = marginonshore;
             onshoreerevenue.marginpercentage = percentageonshore * 100;
+            onshoreerevenue.monthcount = monthList.Count;
 
             offshorerevenue.cost = totalCostOffshore;
             offshorerevenue.revenu = totalyearspendoffshore;
@@ -249,7 +264,7 @@ namespace InfiniteIP.Services
                 var runSheets = await _context.GmRunsheet.Where(a => GmIds.Contains(a.GmId)).ToListAsync();
                 if (runSheets.Any())
                 {
-                    foreach (var runsheet in gmRunsheets) 
+                    foreach (var runsheet in gmRunsheets)
                     {
                         var checkExist = runSheets.Where(a => a.GmId == runsheet.GmId && a.month == runsheet.month).FirstOrDefault();
                         if (checkExist == null)
@@ -305,7 +320,7 @@ namespace InfiniteIP.Services
             var (monthList, yearList) = GetMonthBetween(minDate, maxDate);
 
             int i = 0;
-            foreach(string yr in yearList)
+            foreach (string yr in yearList)
             {
                 chHeader.Add($"CH{yr}");
                 costHeader.Add("Cost");
@@ -324,7 +339,7 @@ namespace InfiniteIP.Services
             monthHeaders.AddRange(monthHeader);
             monthHeaders.AddRange(monthHeader);
 
-            List<Gmrunsheet> lstgmrunsheet = new();           
+            List<Gmrunsheet> lstgmrunsheet = new();
 
             foreach (var item in result)
             {
@@ -347,7 +362,7 @@ namespace InfiniteIP.Services
                 gmrunsheet.billrate = item.billrate;
 
                 var (currentMonthList, _) = GetMonthBetween(item.startdate, item.enddate);
-                
+
 
                 foreach (var month in monthList)
                 {
@@ -358,16 +373,16 @@ namespace InfiniteIP.Services
                     runsheet.GMId = item.Id;
                     runsheet.month = month;
                     runsheet.hours = runData == null ? item.hours : runData.hours;
-                    runsheet.cost= decimal.Parse(item.loadedrate) * (runData == null ? item.hours : runData.hours);
-                    runsheet.revenue= decimal.Parse(item.billrate) * (runData == null ? item.hours : runData.hours);
+                    runsheet.cost = decimal.Parse(item.loadedrate) * (runData == null ? item.hours : runData.hours);
+                    runsheet.revenue = decimal.Parse(item.billrate) * (runData == null ? item.hours : runData.hours);
                     runsheet.currentMonth = DateTime.Now.ToString("MMM yy") == month;
                     runsheet.isCurrentMonthActive = currentMonthList.Contains(month);
                     lstrunsheet.Add(runsheet);
                 }
 
                 gmrunsheet.runsheet = lstrunsheet;
-                gmrunsheet.totalcost = decimal.Parse(item.loadedrate) * item.hours * 3;
-                gmrunsheet.totalrevenue = decimal.Parse(item.billrate) * item.hours * 3;
+                gmrunsheet.totalcost = decimal.Parse(item.loadedrate) * item.hours * monthList.Count;
+                gmrunsheet.totalrevenue = decimal.Parse(item.billrate) * item.hours * monthList.Count;
                 gmrunsheet.totalrevenueytd = decimal.Parse(item.billrate) * item.hours * monthList.Count;
                 gmrunsheet.totalrevenueytdproject = decimal.Parse(item.billrate) * item.hours * monthList.Count;
                 lstgmrunsheet.Add(gmrunsheet);
@@ -379,15 +394,15 @@ namespace InfiniteIP.Services
         }
 
         //GM sheet Summary Summary(Actual+Projection) && YTD
-        public async Task<Dictionary<string,Runsheetsummary>> GetRunsheetsummary(int AccountId,int ProjectId)
+        public async Task<Dictionary<string, Runsheetsummary>> GetRunsheetsummary(int AccountId, int ProjectId)
         {
             Runsheetsummary runsheetsummary = new();
-            Runsheetsummary runsheetsummaryYtd = new();   
+            Runsheetsummary runsheetsummaryYtd = new();
 
             var result = await _context.GmSheet
                           .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes")
                           .Select(x => new
-                          { billrate = decimal.Parse(x.billrate) * x.hours, x.duration,x.startdate,x.enddate, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
+                          { billrate = decimal.Parse(x.billrate) * x.hours, x.duration, x.startdate, x.enddate, x.Id, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
                           .AsQueryable()
                           .ToListAsync();
 
@@ -399,13 +414,12 @@ namespace InfiniteIP.Services
             decimal afterdiscountYtd = 0;
             decimal plannedgmYtd = 0;
 
-            if (result.Count > 0)
+            if (result.Any())
             {
+                var minDate = result.Min(x => x.startdate);
+                var maxDate = result.Max(x => x.enddate);
 
-                var minDate =result.Min(x => x.startdate);
-                var maxDate =result.Max(x => x.enddate);
-
-                List<string> monthList = GetMonthBetween(minDate, maxDate);
+                var (monthList, _) = GetMonthBetween(minDate, maxDate);
 
                 totalRevenue = result.Sum(x => x.billrate) * monthList.Count;
                 totalCost = result.Sum(x => x.loadedrate) * monthList.Count;
@@ -418,6 +432,13 @@ namespace InfiniteIP.Services
 
                 plannedgmYtd = (actualrevenueprojection * 1) * 25 / 100;
 
+                foreach (var res in result) {
+                    var resmonthly = await _context.GmRunsheet
+                                    .Where(x => x.Id == res.Id)
+                                    .AsQueryable()
+                                    .ToListAsync();
+                                    }
+
                 //Summary Actual+Projection
                 runsheetsummary.actualrevenueprojection = totalRevenue;
                 runsheetsummary.afterdiscount = afterdiscount;//as per the Excel
@@ -426,7 +447,7 @@ namespace InfiniteIP.Services
                 runsheetsummary.plannedcostnottoextend = afterdiscount - plannedgm;
                 runsheetsummary.actualcostprojection = totalCost;
                 runsheetsummary.costoverrun = (afterdiscount - plannedgm) - totalCost;
-                runsheetsummary.projectgmpercentage = (int)((afterdiscount - totalCost) / afterdiscount) / 100;
+                runsheetsummary.projectgmpercentage = (int)((afterdiscount - totalCost) / afterdiscount);
                 runsheetsummary.balanceamountprojected = totalRevenue; //--do verify
 
                 //Summary YTD
@@ -437,7 +458,7 @@ namespace InfiniteIP.Services
                 runsheetsummaryYtd.plannedcostnottoextend = afterdiscountYtd - plannedgmYtd;
                 runsheetsummaryYtd.actualcostprojection = totalCost;
                 runsheetsummaryYtd.costoverrun = (afterdiscountYtd - plannedgmYtd) - totalCost;
-                runsheetsummaryYtd.projectgmpercentage = (int)((afterdiscountYtd - totalCost) / afterdiscountYtd) / 100;
+                runsheetsummaryYtd.projectgmpercentage = (int)((afterdiscountYtd - totalCost) / afterdiscountYtd);
                 runsheetsummaryYtd.balanceamountprojected = totalRevenue;
             }
 

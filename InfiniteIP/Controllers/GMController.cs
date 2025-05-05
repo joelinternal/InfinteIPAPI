@@ -33,6 +33,21 @@ namespace InfiniteIP.Controllers
             }
         }
 
+        /*
+        [HttpPost]
+        public async Task<IActionResult> SubmitGmSheet(int AccountId,int ProjectId,int snow)
+        {
+            try
+            {
+                var response = await _service.AddGmSheetAsync(gmSheets);
+                return response ? Ok() : BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        */
         [HttpGet("{AccountId}/{ProjectId}")]
         public async Task<IActionResult> GetGmSheet(int AccountId, int ProjectId)
         {

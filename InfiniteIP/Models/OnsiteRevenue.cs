@@ -8,6 +8,8 @@
         public decimal marginpercentage { get; set; }
         public decimal totalrevenue {  get; set; } 
         public decimal totalmargin { get; set; }  
+
+        public int monthcount { get; set; }
         
         public List<RevenuOverallDetails> revoverall { get; set; }
 
