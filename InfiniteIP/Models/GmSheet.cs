@@ -30,5 +30,6 @@ namespace InfiniteIP.Models
         [NotMapped]
         public int slno { get; set; }
         public int edit { get; set; }
+        public string source { get; set; } = "AddGmSheet";
     }
 }
