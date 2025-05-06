@@ -5,7 +5,7 @@ namespace InfiniteIP.Services
     public interface IGmSheet
     {
         Task<bool> AddGmSheetAsync(List<GmSheet> gmSheets);
-        Task<List<GmSheet>> GetGmSheetAsync(int AccountId, int ProjectId);
+        Task<List<GmSheet>> GetGmSheetAsync(int AccountId, int ProjectId, int Runsheet);
 
         Task<Dictionary<string, RevenueDetails>> GetRevenueDetails(int AccountId, int ProjectId);
 

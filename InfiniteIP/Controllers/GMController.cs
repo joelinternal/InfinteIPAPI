@@ -48,12 +48,12 @@ namespace InfiniteIP.Controllers
             }
         }
         */
-        [HttpGet("{AccountId}/{ProjectId}")]
-        public async Task<IActionResult> GetGmSheet(int AccountId, int ProjectId)
+        [HttpGet("{AccountId}/{ProjectId}/{Runsheet}")]
+        public async Task<IActionResult> GetGmSheet(int AccountId, int ProjectId,int Runsheet)
         {
             try
             {
-                var response = await _service.GetGmSheetAsync(AccountId, ProjectId);
+                var response = await _service.GetGmSheetAsync(AccountId, ProjectId,Runsheet);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace InfiniteIP.Controllers
         [HttpGet("Excel/{AccountId}/{ProjectId}")]
         public async Task<IActionResult> ExportToExcel(int AccountId, int ProjectId)
         {
-            var datas = await _service.GetGmSheetAsync(AccountId, ProjectId);
+            var datas = await _service.GetGmSheetAsync(AccountId, ProjectId,1);
 
             var minDate = datas.Min(x => x.startdate);
             var maxDate = datas.Max(x => x.enddate);

@@ -127,11 +127,12 @@ namespace InfiniteIP.Services
             }
         }
 
-        public async Task<List<GmSheet>> GetGmSheetAsync(int AccountId, int ProjectId)
+        public async Task<List<GmSheet>> GetGmSheetAsync(int AccountId, int ProjectId, int Runsheet)
         {
             try
             {
-                return await _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId)
+                return await _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId
+                 && (Runsheet == 1 || x.source != "RunSheet"))
                                     .OrderBy(x => x.Id).AsNoTracking()
                                     .ToListAsync();
 
@@ -432,12 +433,13 @@ namespace InfiniteIP.Services
 
                 plannedgmYtd = (actualrevenueprojection * 1) * 25 / 100;
 
-                foreach (var res in result) {
+                foreach (var res in result)
+                {
                     var resmonthly = await _context.GmRunsheet
                                     .Where(x => x.Id == res.Id)
                                     .AsQueryable()
                                     .ToListAsync();
-                                    }
+                }
 
                 //Summary Actual+Projection
                 runsheetsummary.actualrevenueprojection = totalRevenue;
