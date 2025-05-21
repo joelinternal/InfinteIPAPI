@@ -364,6 +364,7 @@ namespace InfiniteIP.Services
 
                 var (currentMonthList, _) = GetMonthBetween(item.startdate, item.enddate);
 
+                bool isPreviousMonth = true;
 
                 foreach (var month in monthList)
                 {
@@ -376,7 +377,11 @@ namespace InfiniteIP.Services
                     runsheet.hours = runData == null ? item.hours : runData.hours;
                     runsheet.cost = decimal.Parse(item.loadedrate) * (runData == null ? item.hours : runData.hours);
                     runsheet.revenue = decimal.Parse(item.billrate) * (runData == null ? item.hours : runData.hours);
-                    runsheet.currentMonth = DateTime.Now.ToString("MMM yy") == month;
+                    runsheet.currentMonth = isPreviousMonth;
+                    if(DateTime.Now.ToString("MMM yy") == month)
+                    {
+                        isPreviousMonth = false;
+                    }
                     runsheet.isCurrentMonthActive = currentMonthList.Contains(month);
                     lstrunsheet.Add(runsheet);
                 }
