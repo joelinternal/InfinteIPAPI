@@ -197,52 +197,56 @@ namespace InfiniteIP.Services
 
             var months = new List<string>();
 
-            var minDate = resultmonth.Min(x => x.startdate);
-            var maxDate = resultmonth.Max(x => x.enddate);
 
-            var (monthList, yearList) = GetMonthBetween(minDate, maxDate);
+            if (resultmonth.Any())
+            {
+                var minDate = resultmonth.Min(x => x.startdate);
+                var maxDate = resultmonth.Max(x => x.enddate);
+                var (monthList, yearList) = GetMonthBetween(minDate, maxDate);
 
-            var resultoffshore = await _context.GmSheet
-                            .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes" && x.location == "Offshore")
-                            .Select(x => new
-                            { billrate = decimal.Parse(x.billrate) * x.hours, x.duration, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
-                            .AsQueryable()
-                            .ToListAsync();
 
-            var resultonshore = await _context.GmSheet
-                            .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes" && x.location == "Onshore")
-                            .Select(x => new
-                            { billrate = decimal.Parse(x.billrate) * x.hours, x.duration, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
-                            .AsQueryable()
-                            .ToListAsync();
+                var resultoffshore = await _context.GmSheet
+                                .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes" && x.location == "Offshore")
+                                .Select(x => new
+                                { billrate = decimal.Parse(x.billrate) * x.hours, x.duration, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
+                                .AsQueryable()
+                                .ToListAsync();
 
-            totalCostOffshore = (int)resultoffshore.Sum(x => x.loadedrate);
-            totalCostOnshore = (int)resultonshore.Sum(x => x.loadedrate);
-            totalCost = totalCostOffshore + totalCostOnshore;
+                var resultonshore = await _context.GmSheet
+                                .Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.status == "Active" && x.billable == "Yes" && x.location == "Onshore")
+                                .Select(x => new
+                                { billrate = decimal.Parse(x.billrate) * x.hours, x.duration, loadedrate = decimal.Parse(x.loadedrate) * x.hours * decimal.Parse(x.duration) })
+                                .AsQueryable()
+                                .ToListAsync();
 
-            totalmonthlySpend = (int)resultoffshore.Sum(x => x.billrate) + (int)resultonshore.Sum(x => x.billrate);
+                totalCostOffshore = (int)resultoffshore.Sum(x => x.loadedrate);
+                totalCostOnshore = (int)resultonshore.Sum(x => x.loadedrate);
+                totalCost = totalCostOffshore + totalCostOnshore;
 
-            totalyearspendoffshore = (decimal)resultoffshore.Sum(x => x.billrate * decimal.Parse(x.duration));
-            totalyearspendonshore = (decimal)resultonshore.Sum(x => x.billrate * decimal.Parse(x.duration));
+                totalmonthlySpend = (int)resultoffshore.Sum(x => x.billrate) + (int)resultonshore.Sum(x => x.billrate);
 
-            marginoffshore = totalyearspendoffshore - totalCostOffshore;
-            marginonshore = totalyearspendonshore - totalCostOnshore;
+                totalyearspendoffshore = (decimal)resultoffshore.Sum(x => x.billrate * decimal.Parse(x.duration));
+                totalyearspendonshore = (decimal)resultonshore.Sum(x => x.billrate * decimal.Parse(x.duration));
 
-            percentageoffshore = totalyearspendoffshore > 0 ? (totalyearspendoffshore - totalCostOffshore) / totalyearspendoffshore : 0;
-            percentageonshore = totalyearspendonshore > 0 ? (totalyearspendonshore - totalCostOnshore) / totalyearspendonshore : 0;
+                marginoffshore = totalyearspendoffshore - totalCostOffshore;
+                marginonshore = totalyearspendonshore - totalCostOnshore;
 
-            //
-            onshoreerevenue.cost = totalCostOnshore;
-            onshoreerevenue.revenu = totalyearspendonshore;
-            onshoreerevenue.margin = marginonshore;
-            onshoreerevenue.marginpercentage = percentageonshore * 100;
-            onshoreerevenue.monthcount = monthList.Count;
+                percentageoffshore = totalyearspendoffshore > 0 ? (totalyearspendoffshore - totalCostOffshore) / totalyearspendoffshore : 0;
+                percentageonshore = totalyearspendonshore > 0 ? (totalyearspendonshore - totalCostOnshore) / totalyearspendonshore : 0;
 
-            offshorerevenue.cost = totalCostOffshore;
-            offshorerevenue.revenu = totalyearspendoffshore;
-            offshorerevenue.margin = marginoffshore;
-            offshorerevenue.marginpercentage = percentageoffshore * 100;
+                //
+                onshoreerevenue.cost = totalCostOnshore;
+                onshoreerevenue.revenu = totalyearspendonshore;
+                onshoreerevenue.margin = marginonshore;
+                onshoreerevenue.marginpercentage = percentageonshore * 100;
+                onshoreerevenue.monthcount = monthList.Count;
 
+                offshorerevenue.cost = totalCostOffshore;
+                offshorerevenue.revenu = totalyearspendoffshore;
+                offshorerevenue.margin = marginoffshore;
+                offshorerevenue.marginpercentage = percentageoffshore * 100;
+
+            }
             Dictionary<string, RevenueDetails> dictrevenue = new()
             {
                 {
@@ -254,6 +258,7 @@ namespace InfiniteIP.Services
             };
 
             return dictrevenue;
+
         }
 
 
@@ -378,7 +383,7 @@ namespace InfiniteIP.Services
                     runsheet.cost = decimal.Parse(item.loadedrate) * (runData == null ? item.hours : runData.hours);
                     runsheet.revenue = decimal.Parse(item.billrate) * (runData == null ? item.hours : runData.hours);
                     runsheet.currentMonth = isPreviousMonth;
-                    if(DateTime.Now.ToString("MMM yy") == month)
+                    if (DateTime.Now.ToString("MMM yy") == month)
                     {
                         isPreviousMonth = false;
                     }
