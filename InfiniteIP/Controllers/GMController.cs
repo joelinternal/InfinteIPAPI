@@ -33,13 +33,13 @@ namespace InfiniteIP.Controllers
             }
         }
 
-        /*
-        [HttpPost]
-        public async Task<IActionResult> SubmitGmSheet(int AccountId,int ProjectId,int snow)
+        
+        [HttpPost("{AccountId}/{ProjectId}/{sow}")]
+        public async Task<IActionResult> SubmitGmSheet(int AccountId,int ProjectId,int sow)
         {
             try
             {
-                var response = await _service.AddGmSheetAsync(gmSheets);
+                var response = await _service.SubmitGMSheetAsync(AccountId,ProjectId,sow);
                 return response ? Ok() : BadRequest();
             }
             catch (Exception ex)
@@ -47,7 +47,7 @@ namespace InfiniteIP.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        */
+        
         [HttpGet("{AccountId}/{ProjectId}/{Runsheet}")]
         public async Task<IActionResult> GetGmSheet(int AccountId, int ProjectId,int Runsheet)
         {
@@ -61,6 +61,21 @@ namespace InfiniteIP.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{AccountId}/{ProjectId}/{sow}/{Runsheet}")]
+        public async Task<IActionResult> GetGmSheetsubmitAsync(int AccountId, int ProjectId, int sow, int Runsheet)
+        {
+            try
+            {
+                var response = await _service.GetGmSheetsubmitAsync(AccountId, ProjectId, sow, Runsheet);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpGet("Runsheet/{AccountId}/{ProjectId}")]
         public async Task<IActionResult> GetRunSheet(int AccountId, int ProjectId)

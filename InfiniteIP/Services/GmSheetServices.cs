@@ -28,6 +28,26 @@ namespace InfiniteIP.Services
             }
         }
 
+        public async Task<bool> SubmitGMSheetAsync(int AccountId, int ProjectId, int sow)
+        {
+            try
+            {
+                var gmsheet = _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId && x.sow == sow);
+
+                foreach (var gm in gmsheet)
+                {
+                    gm.edit = 1;
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> SubmitGmSheetAsync(List<GmSheet> gmSheets)
         {
             try
@@ -127,11 +147,29 @@ namespace InfiniteIP.Services
             }
         }
 
+        public async Task<List<GmSheet>> GetGmSheetsubmitAsync (int AccountId, int ProjectId, int sow, int Runsheet)
+        {
+            try
+            {
+                return await _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId 
+                    && x.sow== sow && x.edit==0 && (Runsheet == 1 || x.source != "RunSheet"))
+                                    .OrderBy(x => x.Id).AsNoTracking()
+                                    .ToListAsync();
+
+            }
+            catch (Exception ex)
+            {
+                return new();
+            }
+
+        }
+
+
         public async Task<List<GmSheet>> GetGmSheetAsync(int AccountId, int ProjectId, int Runsheet)
         {
             try
             {
-                return await _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId
+                return await _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId 
                  && (Runsheet == 1 || x.source != "RunSheet"))
                                     .OrderBy(x => x.Id).AsNoTracking()
                                     .ToListAsync();
@@ -389,7 +427,7 @@ namespace InfiniteIP.Services
                         runsheet.currentMonth = true;
                     }
                     runsheet.isCurrentMonthActive = currentMonthList.Contains(month);
-                    lstrunsheet.Add(runsheet);                    
+                    lstrunsheet.Add(runsheet);
                 }
 
                 gmrunsheet.runsheet = lstrunsheet;

@@ -23,5 +23,9 @@ namespace InfiniteIP.Services
         Task<Dictionary<string, Runsheetsummary>> GetRunsheetsummary(int AccountId, int ProjectId);
 
         Task<bool> SaveRunSheetUsers(List<GmRunsheet> gmRunsheets);
+
+        Task<bool> SubmitGMSheetAsync(int AccountId, int ProjectId, int sow);
+
+        Task<List<GmSheet>> GetGmSheetsubmitAsync(int AccountId, int ProjectId, int sow, int Runsheet);
     }
 }
