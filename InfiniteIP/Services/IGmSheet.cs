@@ -27,5 +27,6 @@ namespace InfiniteIP.Services
         Task<bool> SubmitGMSheetAsync(int AccountId, int ProjectId, int sow);
 
         Task<List<GmSheet>> GetGmSheetsubmitAsync(int AccountId, int ProjectId, int sow, int Runsheet);
+        Task<bool> CanAddGmSheetAsync(int AccountId, int ProjectId, int sow);
     }
 }

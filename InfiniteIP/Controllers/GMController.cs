@@ -68,7 +68,12 @@ namespace InfiniteIP.Controllers
             try
             {
                 var response = await _service.GetGmSheetsubmitAsync(AccountId, ProjectId, sow, Runsheet);
-                return Ok(response);
+                var canAddNewSheet = await _service.CanAddGmSheetAsync(AccountId, ProjectId, sow);
+                return Ok(new
+                {
+                    listGmSheet = response,
+                    canAddNew = !canAddNewSheet
+                });
             }
             catch (Exception ex)
             {

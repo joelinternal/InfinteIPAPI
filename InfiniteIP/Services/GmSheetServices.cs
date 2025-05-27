@@ -164,6 +164,21 @@ namespace InfiniteIP.Services
 
         }
 
+        public async Task<bool> CanAddGmSheetAsync(int AccountId, int ProjectId, int sow)
+        {
+            try
+            {
+                return await _context.GmSheet.Where(x => x.accountId == AccountId && x.projectId == ProjectId
+                    && x.sow == sow).AnyAsync();
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+        }
+
 
         public async Task<List<GmSheet>> GetGmSheetAsync(int AccountId, int ProjectId, int Runsheet)
         {
